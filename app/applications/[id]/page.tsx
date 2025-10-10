@@ -14,6 +14,7 @@ import { FileText, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { useAuthContext } from "@/components/auth/auth-provider"
 import { useParams, useRouter } from "next/navigation"
+import { useToast } from "@/components/notifications/toast-provider"
 
 interface Application {
   id: string
@@ -22,10 +23,7 @@ interface Application {
   customer_id: string | null
   phone_number: string
   status: string
-  amount_limit: number
-  profit_margin: number | null
-  tenure_months: number | null
-  monthly_installment: number | null
+  remarks: string | null
   submitted_at: string
   submitted_by: string
   product: {
@@ -56,6 +54,7 @@ export default function ApplicationDetailsPage() {
   const router = useRouter()
   const params = useParams()
   const applicationId = params.id as string
+  const { showToast } = useToast()
 
   const [application, setApplication] = useState<Application | null>(null)
   const [history, setHistory] = useState<StatusHistory[]>([])
@@ -110,7 +109,6 @@ export default function ApplicationDetailsPage() {
     setActionLoading(true)
 
     try {
-      // Update application status
       const { error: updateError } = await supabase
         .from("applications")
         .update({ status: "approved" })
@@ -118,7 +116,6 @@ export default function ApplicationDetailsPage() {
 
       if (updateError) throw updateError
 
-      // Create audit trail entry
       const { error: historyError } = await supabase.from("application_status_history").insert({
         application_id: applicationId,
         from_status: application.status,
@@ -138,10 +135,20 @@ export default function ApplicationDetailsPage() {
         related_application_id: applicationId,
       })
 
+      showToast({
+        title: "Application Approved",
+        message: `Application ${application.application_number} has been approved successfully.`,
+        type: "success",
+      })
+
       router.push("/dashboard")
     } catch (error: any) {
       console.error("[v0] Error approving application:", error)
-      alert("Failed to approve application: " + error.message)
+      showToast({
+        title: "Approval Failed",
+        message: error.message || "Failed to approve application. Please try again.",
+        type: "error",
+      })
     } finally {
       setActionLoading(false)
     }
@@ -183,10 +190,20 @@ export default function ApplicationDetailsPage() {
         related_application_id: applicationId,
       })
 
+      showToast({
+        title: "Application Rejected",
+        message: `Application ${application.application_number} has been rejected.`,
+        type: "success",
+      })
+
       router.push("/dashboard")
     } catch (error: any) {
       console.error("[v0] Error rejecting application:", error)
-      alert("Failed to reject application: " + error.message)
+      showToast({
+        title: "Rejection Failed",
+        message: error.message || "Failed to reject application. Please try again.",
+        type: "error",
+      })
     } finally {
       setActionLoading(false)
     }
@@ -194,7 +211,11 @@ export default function ApplicationDetailsPage() {
 
   async function handleReturn() {
     if (!profile || !application || !returnReason.trim()) {
-      alert("Please provide a reason for returning the application.")
+      showToast({
+        title: "Missing Information",
+        message: "Please provide a reason for returning the application.",
+        type: "warning",
+      })
       return
     }
 
@@ -228,11 +249,21 @@ export default function ApplicationDetailsPage() {
         related_application_id: applicationId,
       })
 
+      showToast({
+        title: "Application Returned",
+        message: `Application ${application.application_number} has been returned to the branch user.`,
+        type: "success",
+      })
+
       setShowReturnDialog(false)
       router.push("/dashboard")
     } catch (error: any) {
       console.error("[v0] Error returning application:", error)
-      alert("Failed to return application: " + error.message)
+      showToast({
+        title: "Return Failed",
+        message: error.message || "Failed to return application. Please try again.",
+        type: "error",
+      })
     } finally {
       setActionLoading(false)
     }
@@ -329,6 +360,10 @@ export default function ApplicationDetailsPage() {
                     <p className="font-medium text-slate-900">{application.customer_id || "-"}</p>
                   </div>
                   <div>
+                    <p className="text-sm text-slate-500 mb-1">Phone Number</p>
+                    <p className="font-medium text-slate-900">{application.phone_number}</p>
+                  </div>
+                  <div>
                     <p className="text-sm text-slate-500 mb-1">Branch</p>
                     <p className="font-medium text-slate-900">{application.branch.name}</p>
                   </div>
@@ -342,37 +377,23 @@ export default function ApplicationDetailsPage() {
               </CardContent>
             </Card>
 
-            {/* Product Details */}
+            {/* Application Details */}
             <Card>
               <CardHeader>
-                <CardTitle>Product Details</CardTitle>
+                <CardTitle>Application Details</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div>
                     <p className="text-sm text-slate-500 mb-1">Product Type</p>
                     <p className="font-medium text-slate-900">{application.product.name}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-slate-500 mb-1">Amount Limit</p>
-                    <p className="font-medium text-slate-900">{application.amount_limit.toLocaleString()} ETB</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500 mb-1">Profit Margin</p>
-                    <p className="font-medium text-slate-900">{application.profit_margin || "-"}%</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500 mb-1">Tenure</p>
-                    <p className="font-medium text-slate-900">{application.tenure_months || "-"} months</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500 mb-1">Monthly Installment</p>
-                    <p className="font-medium text-slate-900">
-                      {application.monthly_installment
-                        ? `${application.monthly_installment.toLocaleString()} ETB`
-                        : "-"}
-                    </p>
-                  </div>
+                  {application.remarks && (
+                    <div>
+                      <p className="text-sm text-slate-500 mb-1">Remarks</p>
+                      <p className="font-medium text-slate-900">{application.remarks}</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

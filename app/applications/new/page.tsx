@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { AppHeader } from "@/components/layout/app-header"
 import { AppNav } from "@/components/layout/app-nav"
@@ -12,6 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { useAuthContext } from "@/components/auth/auth-provider"
 import { useRouter } from "next/navigation"
+import { useToast } from "@/components/notifications/toast-provider"
+import { Textarea } from "@/components/ui/textarea"
 
 interface Product {
   id: string
@@ -23,16 +24,14 @@ export default function NewApplicationPage() {
   const { profile } = useAuthContext()
   const supabase = getSupabaseBrowserClient()
   const router = useRouter()
+  const { showToast } = useToast()
 
   const [products, setProducts] = useState<Product[]>([])
   const [selectedProduct, setSelectedProduct] = useState("")
   const [customerName, setCustomerName] = useState("")
   const [customerId, setCustomerId] = useState("")
   const [phoneNumber, setPhoneNumber] = useState("")
-  const [amountLimit, setAmountLimit] = useState("")
-  const [profitMargin, setProfitMargin] = useState("")
-  const [tenureMonths, setTenureMonths] = useState("")
-  const [monthlyInstallment, setMonthlyInstallment] = useState("")
+  const [remarks, setRemarks] = useState("")
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -60,10 +59,7 @@ export default function NewApplicationPage() {
           phone_number: phoneNumber,
           product_id: selectedProduct,
           branch_id: profile.branch_id,
-          amount_limit: Number.parseFloat(amountLimit),
-          profit_margin: profitMargin ? Number.parseFloat(profitMargin) : null,
-          tenure_months: tenureMonths ? Number.parseInt(tenureMonths) : null,
-          monthly_installment: monthlyInstallment ? Number.parseFloat(monthlyInstallment) : null,
+          remarks: remarks || null,
           status: "pending",
           submitted_by: profile.id,
         })
@@ -80,10 +76,43 @@ export default function NewApplicationPage() {
         action_by_role: profile.role,
       })
 
+      const { data: approverAssignments } = await supabase
+        .from("approver_assignments")
+        .select("user_id, users!inner(id, full_name)")
+        .or(`district_id.eq.${profile.branch_id},branch_id.eq.${profile.branch_id},product_id.eq.${selectedProduct}`)
+
+      if (approverAssignments) {
+        const notifications = approverAssignments.map((assignment: any) => ({
+          user_id: assignment.user_id,
+          title: "New Application Assigned",
+          message: `Application ${data.application_number} (${products.find((p) => p.id === selectedProduct)?.name}) has been assigned to your queue.`,
+          type: "application_submitted",
+          related_application_id: data.id,
+        }))
+
+        if (notifications.length > 0) {
+          await supabase.from("notifications").insert(notifications)
+        }
+      }
+
+      showToast({
+        title: "Application Submitted",
+        message: `Application ${data.application_number} has been submitted successfully.`,
+        type: "success",
+        action: {
+          label: "View Application",
+          onClick: () => router.push(`/applications/${data.id}`),
+        },
+      })
+
       router.push("/applications")
     } catch (error: any) {
       console.error("[v0] Error submitting application:", error)
-      alert("Failed to submit application: " + error.message)
+      showToast({
+        title: "Submission Failed",
+        message: error.message || "Failed to submit application. Please try again.",
+        type: "error",
+      })
     } finally {
       setLoading(false)
     }
@@ -194,61 +223,18 @@ export default function NewApplicationPage() {
 
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Financial Details</CardTitle>
+              <CardTitle>Additional Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="amount">
-                    Amount Limit (ETB) <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="amount"
-                    type="number"
-                    step="0.01"
-                    placeholder="50000"
-                    value={amountLimit}
-                    onChange={(e) => setAmountLimit(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="profit-margin">Profit Margin (%)</Label>
-                  <Input
-                    id="profit-margin"
-                    type="number"
-                    step="0.01"
-                    placeholder="5.0"
-                    value={profitMargin}
-                    onChange={(e) => setProfitMargin(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="tenure">Tenure (Months)</Label>
-                  <Input
-                    id="tenure"
-                    type="number"
-                    placeholder="36"
-                    value={tenureMonths}
-                    onChange={(e) => setTenureMonths(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="installment">Monthly Installment (ETB)</Label>
-                  <Input
-                    id="installment"
-                    type="number"
-                    step="0.01"
-                    placeholder="1500"
-                    value={monthlyInstallment}
-                    onChange={(e) => setMonthlyInstallment(e.target.value)}
-                  />
-                </div>
+            <CardContent>
+              <div className="space-y-2">
+                <Label htmlFor="remarks">Remarks (Optional)</Label>
+                <Textarea
+                  id="remarks"
+                  placeholder="Enter any additional notes or remarks about this application..."
+                  value={remarks}
+                  onChange={(e) => setRemarks(e.target.value)}
+                  rows={4}
+                />
               </div>
             </CardContent>
           </Card>

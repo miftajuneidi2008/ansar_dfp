@@ -16,6 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAuthContext } from "@/components/auth/auth-provider"
 import { useRouter } from "next/navigation"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { useToast } from "@/components/notifications/toast-provider"
 
 interface Notification {
   id: string
@@ -31,6 +32,7 @@ export function AppHeader() {
   const { profile, signOut } = useAuthContext()
   const router = useRouter()
   const supabase = getSupabaseBrowserClient()
+  const { showToast } = useToast()
 
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -51,8 +53,21 @@ export function AppHeader() {
             filter: `user_id=eq.${profile.id}`,
           },
           (payload) => {
-            setNotifications((prev) => [payload.new as Notification, ...prev])
+            const newNotification = payload.new as Notification
+            setNotifications((prev) => [newNotification, ...prev])
             setUnreadCount((prev) => prev + 1)
+
+            showToast({
+              title: newNotification.title,
+              message: newNotification.message,
+              type: "info",
+              action: newNotification.related_application_id
+                ? {
+                    label: "View Case",
+                    onClick: () => router.push(`/applications/${newNotification.related_application_id}`),
+                  }
+                : undefined,
+            })
           },
         )
         .subscribe()
