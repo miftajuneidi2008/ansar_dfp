@@ -415,7 +415,7 @@ export default function ApplicationDetailsPage() {
                           Application {entry.to_status.replace("_", " ")}
                         </p>
                         <p className="text-sm text-slate-600">
-                          {entry.user.full_name} - {new Date(entry.created_at).toLocaleString()}
+                          {entry.user?.full_name || "Unknown User"} - {new Date(entry.created_at).toLocaleString()}
                         </p>
                         {entry.reason && (
                           <p className="text-sm text-slate-700 mt-1">

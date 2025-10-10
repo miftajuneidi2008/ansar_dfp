@@ -60,16 +60,15 @@ export default function DashboardPage() {
     `,
     )
 
-    // Branch users only see their own applications
     if (profile.role === "branch_user") {
       query = query.eq("submitted_by", profile.id)
     }
 
-    // Head office approvers see applications based on their assignments
+    // Remove the status filter so they can see approved/rejected applications too
     if (profile.role === "head_office_approver") {
-      // For now, show all pending applications
       // In production, this would be filtered by approver assignments
-      query = query.eq("status", "pending")
+      // For now, show all applications
+      // TODO: Add approver assignment filtering based on district/branch/product
     }
 
     const { data, error } = await query.order("submitted_at", { ascending: false })
@@ -77,7 +76,6 @@ export default function DashboardPage() {
     if (!error && data) {
       setApplications(data)
 
-      // Calculate stats
       const newApps = data.filter((a) => a.status === "pending").length
       const inReview = data.filter((a) => a.status === "in_review").length
       const approved = data.filter((a) => a.status === "approved").length
@@ -120,7 +118,7 @@ export default function DashboardPage() {
 
   const getDashboardTitle = () => {
     if (profile?.role === "branch_user") return "My Submitted Applications"
-    if (profile?.role === "head_office_approver") return "Applications Awaiting Review"
+    if (profile?.role === "head_office_approver") return "Applications Dashboard"
     return "Dashboard"
   }
 
@@ -214,7 +212,7 @@ export default function DashboardPage() {
         {profile?.role === "head_office_approver" && (
           <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-6">
             <p className="text-sm text-teal-800">
-              <span className="font-semibold">Head Office Approver</span> - Showing applications filtered by your
+              <span className="font-semibold">Head Office Approver</span> - Showing all applications filtered by your
               assigned districts, branches, and products.
             </p>
           </div>
@@ -231,9 +229,7 @@ export default function DashboardPage() {
                 <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">BRANCH</th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">SUBMISSION DATE</th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-slate-700">STATUS</th>
-                {profile?.role === "head_office_approver" && (
-                  <th className="text-right px-6 py-4 text-sm font-semibold text-slate-700">ACTION</th>
-                )}
+                <th className="text-right px-6 py-4 text-sm font-semibold text-slate-700">ACTION</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -255,13 +251,11 @@ export default function DashboardPage() {
                     <p className="text-slate-600">{new Date(app.submitted_at).toLocaleDateString()}</p>
                   </td>
                   <td className="px-6 py-4">{getStatusBadge(app.status)}</td>
-                  {profile?.role === "head_office_approver" && (
-                    <td className="px-6 py-4 text-right">
-                      <Button variant="link" onClick={() => router.push(`/applications/${app.id}`)}>
-                        View
-                      </Button>
-                    </td>
-                  )}
+                  <td className="px-6 py-4 text-right">
+                    <Button variant="link" onClick={() => router.push(`/applications/${app.id}`)}>
+                      View
+                    </Button>
+                  </td>
                 </tr>
               ))}
             </tbody>
