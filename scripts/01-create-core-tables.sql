@@ -110,9 +110,10 @@ CREATE TABLE applications (
     product_id UUID NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
     branch_id UUID NOT NULL REFERENCES branches(id) ON DELETE RESTRICT,
     
+    -- Renamed to Sharia-compliant terminology
     -- Financial details
-    application_amount DECIMAL(15, 2) NOT NULL,
-    interest_rate DECIMAL(5, 2),
+    amount_limit DECIMAL(15, 2) NOT NULL,
+    profit_margin DECIMAL(5, 2),
     tenure_months INTEGER,
     monthly_installment DECIMAL(15, 2),
     

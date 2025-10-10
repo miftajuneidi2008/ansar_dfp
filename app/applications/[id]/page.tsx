@@ -22,8 +22,8 @@ interface Application {
   customer_id: string | null
   phone_number: string
   status: string
-  application_amount: number
-  interest_rate: number | null
+  amount_limit: number
+  profit_margin: number | null
   tenure_months: number | null
   monthly_installment: number | null
   submitted_at: string
@@ -354,12 +354,12 @@ export default function ApplicationDetailsPage() {
                     <p className="font-medium text-slate-900">{application.product.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500 mb-1">Application Amount</p>
-                    <p className="font-medium text-slate-900">{application.application_amount.toLocaleString()} SAR</p>
+                    <p className="text-sm text-slate-500 mb-1">Amount Limit</p>
+                    <p className="font-medium text-slate-900">{application.amount_limit.toLocaleString()} ETB</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500 mb-1">Interest Rate</p>
-                    <p className="font-medium text-slate-900">{application.interest_rate || "-"}%</p>
+                    <p className="text-sm text-slate-500 mb-1">Profit Margin</p>
+                    <p className="font-medium text-slate-900">{application.profit_margin || "-"}%</p>
                   </div>
                   <div>
                     <p className="text-sm text-slate-500 mb-1">Tenure</p>
@@ -369,7 +369,7 @@ export default function ApplicationDetailsPage() {
                     <p className="text-sm text-slate-500 mb-1">Monthly Installment</p>
                     <p className="font-medium text-slate-900">
                       {application.monthly_installment
-                        ? `${application.monthly_installment.toLocaleString()} SAR`
+                        ? `${application.monthly_installment.toLocaleString()} ETB`
                         : "-"}
                     </p>
                   </div>

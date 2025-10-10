@@ -29,8 +29,8 @@ export default function NewApplicationPage() {
   const [customerName, setCustomerName] = useState("")
   const [customerId, setCustomerId] = useState("")
   const [phoneNumber, setPhoneNumber] = useState("")
-  const [applicationAmount, setApplicationAmount] = useState("")
-  const [interestRate, setInterestRate] = useState("")
+  const [amountLimit, setAmountLimit] = useState("")
+  const [profitMargin, setProfitMargin] = useState("")
   const [tenureMonths, setTenureMonths] = useState("")
   const [monthlyInstallment, setMonthlyInstallment] = useState("")
   const [loading, setLoading] = useState(false)
@@ -60,8 +60,8 @@ export default function NewApplicationPage() {
           phone_number: phoneNumber,
           product_id: selectedProduct,
           branch_id: profile.branch_id,
-          application_amount: Number.parseFloat(applicationAmount),
-          interest_rate: interestRate ? Number.parseFloat(interestRate) : null,
+          amount_limit: Number.parseFloat(amountLimit),
+          profit_margin: profitMargin ? Number.parseFloat(profitMargin) : null,
           tenure_months: tenureMonths ? Number.parseInt(tenureMonths) : null,
           monthly_installment: monthlyInstallment ? Number.parseFloat(monthlyInstallment) : null,
           status: "pending",
@@ -72,7 +72,6 @@ export default function NewApplicationPage() {
 
       if (error) throw error
 
-      // Create audit trail entry
       await supabase.from("application_status_history").insert({
         application_id: data.id,
         from_status: null,
@@ -201,28 +200,28 @@ export default function NewApplicationPage() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="amount">
-                    Application Amount (SAR) <span className="text-red-500">*</span>
+                    Amount Limit (ETB) <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="amount"
                     type="number"
                     step="0.01"
                     placeholder="50000"
-                    value={applicationAmount}
-                    onChange={(e) => setApplicationAmount(e.target.value)}
+                    value={amountLimit}
+                    onChange={(e) => setAmountLimit(e.target.value)}
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="interest-rate">Interest Rate (%)</Label>
+                  <Label htmlFor="profit-margin">Profit Margin (%)</Label>
                   <Input
-                    id="interest-rate"
+                    id="profit-margin"
                     type="number"
                     step="0.01"
                     placeholder="5.0"
-                    value={interestRate}
-                    onChange={(e) => setInterestRate(e.target.value)}
+                    value={profitMargin}
+                    onChange={(e) => setProfitMargin(e.target.value)}
                   />
                 </div>
               </div>
@@ -240,7 +239,7 @@ export default function NewApplicationPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="installment">Monthly Installment (SAR)</Label>
+                  <Label htmlFor="installment">Monthly Installment (ETB)</Label>
                   <Input
                     id="installment"
                     type="number"
