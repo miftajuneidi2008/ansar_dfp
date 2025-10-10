@@ -94,7 +94,7 @@ export default function SetupPage() {
             <Building2 className="w-10 h-10 text-white" />
           </div>
           <CardTitle className="text-2xl">Complete Your Profile</CardTitle>
-          <CardDescription>Set up your account to access the Zamzam Bank Financing Portal</CardDescription>
+          <CardDescription>Set up your account to access the Ansar DF Applicant Tracking Portal</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -61,8 +61,8 @@ export default function LoginPage() {
             </div>
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold">Zamzam Bank</CardTitle>
-            <CardDescription className="text-base mt-2">Financing Application Portal</CardDescription>
+            <CardTitle className="text-2xl font-bold">Ansar DF</CardTitle>
+            <CardDescription className="text-base mt-2">Applicant Tracking Portal</CardDescription>
           </div>
         </CardHeader>
         <CardContent>

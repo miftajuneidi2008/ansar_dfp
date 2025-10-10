@@ -190,7 +190,7 @@ export default function UsersPage() {
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Add New User</DialogTitle>
-                <DialogDescription>Create a new user account for the Zamzam Bank portal.</DialogDescription>
+                <DialogDescription>Create a new user account for the Ansar DF portal.</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 mt-4">
                 <div className="space-y-2">

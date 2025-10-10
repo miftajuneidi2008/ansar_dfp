@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Zamzam Bank - Financing Portal",
+  title: "Ansar DF - Applicant Tracking Portal",
   description: "Digital financing application tracking system",
     generator: 'v0.app'
 }

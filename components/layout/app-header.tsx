@@ -145,8 +145,8 @@ export function AppHeader() {
             <Building2 className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">Zamzam Bank</h1>
-            <p className="text-xs text-slate-500">Financing Portal</p>
+            <h1 className="text-xl font-bold text-slate-900">Ansar DF</h1>
+            <p className="text-xs text-slate-500">Applicant Tracking Portal</p>
           </div>
         </div>
 

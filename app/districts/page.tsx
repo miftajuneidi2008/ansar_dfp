@@ -131,7 +131,7 @@ export default function DistrictsPage() {
       <div className="p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-slate-900">Districts & Branches</h1>
-          <p className="text-slate-600 mt-1">Manage organizational structure for Zamzam Bank.</p>
+          <p className="text-slate-600 mt-1">Manage organizational structure for Ansar DF.</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
