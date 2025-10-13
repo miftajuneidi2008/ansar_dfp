@@ -36,6 +36,7 @@ export default function ApplicationsPage() {
   const [productFilter, setProductFilter] = useState("all")
 
   const [stats, setStats] = useState({
+    draft: 0,
     pending: 0,
     approved: 0,
     returned: 0,
@@ -66,13 +67,13 @@ export default function ApplicationsPage() {
     if (!error && data) {
       setApplications(data)
 
-      // Calculate stats
+      const draft = data.filter((a) => a.status === "draft").length
       const pending = data.filter((a) => a.status === "pending").length
       const approved = data.filter((a) => a.status === "approved").length
       const returned = data.filter((a) => a.status === "returned").length
       const rejected = data.filter((a) => a.status === "rejected").length
 
-      setStats({ pending, approved, returned, rejected })
+      setStats({ draft, pending, approved, returned, rejected })
     }
   }
 
@@ -92,6 +93,8 @@ export default function ApplicationsPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
+      case "draft":
+        return <Badge className="bg-slate-100 text-slate-700">Draft</Badge>
       case "pending":
         return <Badge className="bg-cyan-100 text-cyan-700">Pending</Badge>
       case "approved":
@@ -123,7 +126,13 @@ export default function ApplicationsPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid md:grid-cols-4 gap-4 mb-6">
+        <div className="grid md:grid-cols-5 gap-4 mb-6">
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-sm text-slate-600 font-medium mb-1">Draft</p>
+              <p className="text-3xl font-bold text-slate-900">{stats.draft}</p>
+            </CardContent>
+          </Card>
           <Card>
             <CardContent className="pt-6">
               <p className="text-sm text-cyan-600 font-medium mb-1">Pending</p>
@@ -205,7 +214,13 @@ export default function ApplicationsPage() {
                 <tr
                   key={app.id}
                   className="hover:bg-slate-50 cursor-pointer"
-                  onClick={() => router.push(`/applications/${app.id}`)}
+                  onClick={() => {
+                    if (app.status === "draft") {
+                      router.push(`/applications/new?edit=${app.id}`)
+                    } else {
+                      router.push(`/applications/${app.id}`)
+                    }
+                  }}
                 >
                   <td className="px-6 py-4">
                     <p className="font-medium text-slate-900">{app.application_number}</p>

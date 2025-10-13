@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { useAuthContext } from "@/components/auth/auth-provider"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/components/notifications/toast-provider"
 import { Textarea } from "@/components/ui/textarea"
 
@@ -24,7 +24,11 @@ export default function NewApplicationPage() {
   const { profile } = useAuthContext()
   const supabase = getSupabaseBrowserClient()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { showToast } = useToast()
+
+  const editId = searchParams.get("edit")
+  const isEditing = !!editId
 
   const [products, setProducts] = useState<Product[]>([])
   const [selectedProduct, setSelectedProduct] = useState("")
@@ -33,10 +37,42 @@ export default function NewApplicationPage() {
   const [phoneNumber, setPhoneNumber] = useState("")
   const [remarks, setRemarks] = useState("")
   const [loading, setLoading] = useState(false)
+  const [nameError, setNameError] = useState("")
 
   useEffect(() => {
     fetchProducts()
+    if (isEditing) {
+      loadDraftApplication()
+    }
   }, [])
+
+  async function loadDraftApplication() {
+    if (!editId || !profile) return
+
+    const { data, error } = await supabase
+      .from("applications")
+      .select("*")
+      .eq("id", editId)
+      .eq("status", "draft")
+      .eq("submitted_by", profile.id)
+      .single()
+
+    if (error || !data) {
+      showToast({
+        title: "Error",
+        message: "Could not load draft application",
+        type: "error",
+      })
+      router.push("/applications")
+      return
+    }
+
+    setSelectedProduct(data.product_id)
+    setCustomerName(data.customer_name)
+    setCustomerId(data.customer_id || "")
+    setPhoneNumber(data.phone_number)
+    setRemarks(data.remarks || "")
+  }
 
   async function fetchProducts() {
     const { data } = await supabase.from("products").select("*").eq("is_active", true).order("name")
@@ -44,33 +80,124 @@ export default function NewApplicationPage() {
     if (data) setProducts(data)
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!profile || !selectedProduct) return
+  function handleCustomerNameChange(value: string) {
+    setCustomerName(value)
+
+    // Check if value contains only letters and spaces
+    const nameRegex = /^[a-zA-Z\s]*$/
+    if (value && !nameRegex.test(value)) {
+      setNameError("Customer name should only contain letters and spaces")
+    } else {
+      setNameError("")
+    }
+  }
+
+  async function handleSaveAsDraft() {
+    if (!profile || !selectedProduct || !customerName || nameError) return
 
     setLoading(true)
 
     try {
-      const { data, error } = await supabase
-        .from("applications")
-        .insert({
-          customer_name: customerName,
-          customer_id: customerId || null,
-          phone_number: phoneNumber,
-          product_id: selectedProduct,
-          branch_id: profile.branch_id,
-          remarks: remarks || null,
-          status: "pending",
-          submitted_by: profile.id,
+      const applicationData = {
+        customer_name: customerName,
+        customer_id: customerId || null,
+        phone_number: phoneNumber,
+        product_id: selectedProduct,
+        branch_id: profile.branch_id,
+        remarks: remarks || null,
+        status: "draft",
+        submitted_by: profile.id,
+      }
+
+      if (isEditing) {
+        // Update existing draft
+        const { error } = await supabase
+          .from("applications")
+          .update(applicationData)
+          .eq("id", editId)
+          .eq("status", "draft")
+
+        if (error) throw error
+
+        showToast({
+          title: "Draft Saved",
+          message: "Your draft has been updated successfully.",
+          type: "success",
         })
-        .select()
+      } else {
+        // Create new draft
+        const { error } = await supabase.from("applications").insert(applicationData)
+
+        if (error) throw error
+
+        showToast({
+          title: "Draft Saved",
+          message: "Your application has been saved as a draft.",
+          type: "success",
+        })
+      }
+
+      router.push("/applications")
+    } catch (error: any) {
+      console.error("[v0] Error saving draft:", error)
+      showToast({
+        title: "Save Failed",
+        message: error.message || "Failed to save draft. Please try again.",
+        type: "error",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!profile || !selectedProduct || nameError) return
+
+    setLoading(true)
+
+    try {
+      let applicationId = editId
+
+      if (isEditing) {
+        // Update draft to pending
+        const { error } = await supabase
+          .from("applications")
+          .update({ status: "pending" })
+          .eq("id", editId)
+          .eq("status", "draft")
+
+        if (error) throw error
+      } else {
+        // Create new application
+        const { data, error } = await supabase
+          .from("applications")
+          .insert({
+            customer_name: customerName,
+            customer_id: customerId || null,
+            phone_number: phoneNumber,
+            product_id: selectedProduct,
+            branch_id: profile.branch_id,
+            remarks: remarks || null,
+            status: "pending",
+            submitted_by: profile.id,
+          })
+          .select()
+          .single()
+
+        if (error) throw error
+        applicationId = data.id
+      }
+
+      const { data: appData } = await supabase
+        .from("applications")
+        .select("application_number")
+        .eq("id", applicationId)
         .single()
 
-      if (error) throw error
-
       await supabase.from("application_status_history").insert({
-        application_id: data.id,
-        from_status: null,
+        application_id: applicationId,
+        from_status: isEditing ? "draft" : null,
         to_status: "pending",
         action_by: profile.id,
         action_by_role: profile.role,
@@ -78,16 +205,16 @@ export default function NewApplicationPage() {
 
       const { data: approverAssignments } = await supabase
         .from("approver_assignments")
-        .select("user_id, users!inner(id, full_name)")
+        .select("approver_id")
         .or(`district_id.eq.${profile.branch_id},branch_id.eq.${profile.branch_id},product_id.eq.${selectedProduct}`)
 
       if (approverAssignments) {
         const notifications = approverAssignments.map((assignment: any) => ({
-          user_id: assignment.user_id,
+          user_id: assignment.approver_id,
           title: "New Application Assigned",
-          message: `Application ${data.application_number} (${products.find((p) => p.id === selectedProduct)?.name}) has been assigned to your queue.`,
+          message: `Application ${appData?.application_number} (${products.find((p) => p.id === selectedProduct)?.name}) has been assigned to your queue.`,
           type: "application_submitted",
-          related_application_id: data.id,
+          related_application_id: applicationId,
         }))
 
         if (notifications.length > 0) {
@@ -97,11 +224,11 @@ export default function NewApplicationPage() {
 
       showToast({
         title: "Application Submitted",
-        message: `Application ${data.application_number} has been submitted successfully.`,
+        message: `Application ${appData?.application_number} has been submitted successfully.`,
         type: "success",
         action: {
           label: "View Application",
-          onClick: () => router.push(`/applications/${data.id}`),
+          onClick: () => router.push(`/applications/${applicationId}`),
         },
       })
 
@@ -137,8 +264,14 @@ export default function NewApplicationPage() {
 
       <div className="p-6 max-w-3xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-900">New Application</h1>
-          <p className="text-slate-600 mt-1">Submit a new financing application for a customer.</p>
+          <h1 className="text-3xl font-bold text-slate-900">
+            {isEditing ? "Edit Draft Application" : "New Application"}
+          </h1>
+          <p className="text-slate-600 mt-1">
+            {isEditing
+              ? "Update your draft and submit when ready."
+              : "Submit a new financing application for a customer."}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -191,9 +324,11 @@ export default function NewApplicationPage() {
                   id="customer-name"
                   placeholder="Enter customer's full name"
                   value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
+                  onChange={(e) => handleCustomerNameChange(e.target.value)}
                   required
+                  className={nameError ? "border-red-500" : ""}
                 />
+                {nameError && <p className="text-sm text-red-500">{nameError}</p>}
               </div>
 
               <div className="space-y-2">
@@ -243,7 +378,15 @@ export default function NewApplicationPage() {
             <Button type="button" variant="outline" onClick={() => router.back()}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !selectedProduct}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleSaveAsDraft}
+              disabled={loading || !selectedProduct || !customerName || !!nameError}
+            >
+              {loading ? "Saving..." : "Save as Draft"}
+            </Button>
+            <Button type="submit" disabled={loading || !selectedProduct || !!nameError}>
               {loading ? "Submitting..." : "Submit Application"}
             </Button>
           </div>
