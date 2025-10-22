@@ -30,6 +30,7 @@ interface Application {
 
 export default function DashboardPage() {
   const { profile } = useAuthContext()
+
   const supabase = getSupabaseBrowserClient()
   const router = useRouter()
 
@@ -37,6 +38,7 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [productFilter, setProductFilter] = useState("all")
+  const [products, setProducts] = useState([])
 
   const [stats, setStats] = useState({
     newApplications: 0,
@@ -47,8 +49,17 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchApplications()
+    fetchProducts();
   }, [profile])
 
+
+  async function fetchProducts(){
+    const { data, error } = await supabase.from("products").select("*")
+    if (!error && data) {
+      setProducts(data)
+    }
+    console.log(data);
+  }
   async function fetchApplications() {
     if (!profile) return
 
@@ -76,10 +87,10 @@ export default function DashboardPage() {
     if (!error && data) {
       setApplications(data)
 
-      const newApps = data.filter((a) => a.status === "pending").length
-      const inReview = data.filter((a) => a.status === "in_review").length
-      const approved = data.filter((a) => a.status === "approved").length
-      const rejected = data.filter((a) => a.status === "rejected").length
+      const newApps = data.filter((a:any) => a.status === "pending").length
+      const inReview = data.filter((a:any) => a.status === "in_review").length
+      const approved = data.filter((a:any) => a.status === "approved").length
+      const rejected = data.filter((a:any) => a.status === "rejected").length
 
       setStats({
         newApplications: newApps,
@@ -202,8 +213,9 @@ export default function DashboardPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Products</SelectItem>
-                <SelectItem value="Salihat">Salihat</SelectItem>
-                <SelectItem value="Commercial">Commercial</SelectItem>
+                {products.map((product:any)=>(
+                   <SelectItem key={product.id} value={product.id}>{product.name}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

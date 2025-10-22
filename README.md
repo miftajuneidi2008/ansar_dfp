@@ -1,30 +1,107 @@
-# Zamzam Bank financing portal
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/hamudabdi-1856s-projects/v0-zamzam-bank-financing-portal)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/projects/FWdwgrO28BI)
+## Table of Contents
 
-## Overview
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Running Supabase Locally](#running-supabase-locally)
+  - [Environment Variables](#environment-variables)
+  - [Running the Next.js Application](#running-the-nextjs-application)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
+- [License](#license)
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+## Getting Started
 
-## Deployment
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
 
-Your project is live at:
+### Prerequisites
 
-**[https://vercel.com/hamudabdi-1856s-projects/v0-zamzam-bank-financing-portal](https://vercel.com/hamudabdi-1856s-projects/v0-zamzam-bank-financing-portal)**
+Before you begin, ensure you have the following installed:
 
-## Build your app
+*   **Node.js**: [https://nodejs.org/](https://nodejs.org/) (LTS version recommended)
+*   **npm** (comes with Node.js)
+*   **Docker Desktop**: [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop) (Required to run local Supabase services)
 
-Continue building your app on:
+### Installation
 
-**[https://v0.app/chat/projects/FWdwgrO28BI](https://v0.app/chat/projects/FWdwgrO28BI)**
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/miftajuneidi2008/ansar_dfp.git
+    cd ansar_dfp
+    ```
 
-## How It Works
+2.  **Install project dependencies:**
+    ```bash
+    npm install
+    ```
 
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+3.  **Install Supabase CLI (if not already installed globally):**
+    ```bash
+    npm install supabase --save-dev # or npm install -g supabase if you prefer global
+    ```
+
+### Running Supabase Locally
+
+This project uses a local instance of Supabase for development.
+
+1.  **Start Docker Desktop.** Ensure Docker is running before proceeding.
+
+2.  **Initialize Supabase in your project:**
+    If this is your first time setting up Supabase locally for this project, you need to initialize it. This creates the `supabase/` directory.
+    ```bash
+    npx supabase init
+    ```
+    *Note: If `supabase/` directory already exists, you can skip this step.*
+
+3.  **Start Supabase services:**
+    This command will start all the Supabase services (Postgres, Auth, Storage, etc.) as Docker containers on your machine.
+    ```bash
+    npx supabase start
+    ```
+    Upon successful execution, you will see output similar to this:
+
+    ```
+    Started Supabase local development setup.
+
+        API URL: http://localhost:54321
+        Dashboard URL: http://localhost:54323
+        DB URL: postgresql://supabase_admin:[YOUR-DB-PASSWORD]@localhost:54322/postgres
+        Studio URL: http://localhost:54323
+        anon key: [YOUR_ANON_KEY]
+        service_role key: [YOUR_SERVICE_ROLE_KEY]
+    ```
+
+    **Keep this terminal window open** as long as you are working with the local Supabase instance.
+
+### Environment Variables
+
+You need to configure your environment variables for the Next.js application to connect to your local Supabase instance.
+
+1.  **Create a `.env` file** in the root of your project:
+    ```bash
+    touch .env.local
+    ```
+
+2.  **Copy the `API URL` and `anon key`** from the `npx supabase start` output and paste them into your `.env.local` file. It should look like this:
+
+    ```env
+    NEXT_PUBLIC_SUPABASE_URL="http://localhost:54321"
+    NEXT_PUBLIC_SUPABASE_ANON_KEY="[YOUR_ANON_KEY_HERE]"
+    ```
+    *Replace `[YOUR_ANON_KEY_HERE]` with the actual `anon key` from your `npx supabase start` output.*
+
+### Running the Next.js Application
+
+Once Supabase is running and your environment variables are set:
+
+1.  **Start the Next.js development server:**
+    ```bash
+    npm run dev
+    ```
+
+2.  Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+
+## Project Structure
+
