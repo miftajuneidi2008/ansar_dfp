@@ -8,10 +8,6 @@
   - [Running Supabase Locally](#running-supabase-locally)
   - [Environment Variables](#environment-variables)
   - [Running the Next.js Application](#running-the-nextjs-application)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
-
 ## Getting Started
 
 Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
@@ -103,5 +99,5 @@ Once Supabase is running and your environment variables are set:
 
 2.  Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-## Project Structure
+
 
