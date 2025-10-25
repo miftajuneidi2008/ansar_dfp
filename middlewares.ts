@@ -30,6 +30,8 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  console.log(user,"user")
+
   const protectedRoutes = ["/dashboard", "/applications", "/users", "/settings", "/districts", "/products", "/setup"]
   const isProtectedRoute = protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
 
@@ -64,3 +66,8 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 }
+
+
+
+
+

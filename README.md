@@ -44,14 +44,16 @@ This project uses a local instance of Supabase for development.
 
 1.  **Start Docker Desktop.** Ensure Docker is running before proceeding.
 
-2.  **Initialize Supabase in your project:**
+2. **Inistall subabse using npm:**
+
+3.  **Initialize Supabase in your project:**
     If this is your first time setting up Supabase locally for this project, you need to initialize it. This creates the `supabase/` directory.
     ```bash
     npx supabase init
     ```
     *Note: If `supabase/` directory already exists, you can skip this step.*
 
-3.  **Start Supabase services:**
+4.  **Start Supabase services:**
     This command will start all the Supabase services (Postgres, Auth, Storage, etc.) as Docker containers on your machine.
     ```bash
     npx supabase start
@@ -75,18 +77,8 @@ This project uses a local instance of Supabase for development.
 
 You need to configure your environment variables for the Next.js application to connect to your local Supabase instance.
 
-1.  **Create a `.env` file** in the root of your project:
-    ```bash
-    touch .env.local
-    ```
+1.  **copy a ` anon key`** from the `npx supabase start` output and paste into your NEXT_PUBLIC_SUPABASE_ANON_KEY (varibale is in compose.yaml) file
 
-2.  **Copy the `API URL` and `anon key`** from the `npx supabase start` output and paste them into your `.env.local` file. It should look like this:
-
-    ```env
-    NEXT_PUBLIC_SUPABASE_URL="http://localhost:54321"
-    NEXT_PUBLIC_SUPABASE_ANON_KEY="[YOUR_ANON_KEY_HERE]"
-    ```
-    *Replace `[YOUR_ANON_KEY_HERE]` with the actual `anon key` from your `npx supabase start` output.*
 
 ### Running the Next.js Application
 
@@ -94,7 +86,7 @@ Once Supabase is running and your environment variables are set:
 
 1.  **Start the Next.js development server:**
     ```bash
-    npm run dev
+    docker-compose up --build 
     ```
 
 2.  Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.

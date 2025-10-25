@@ -95,7 +95,6 @@ export default function ProductsPage() {
   const onSubmit: SubmitHandler<ProductSchematype> = async(data) => {
    
     const { product_name, product_code, product_description } = data;
-    console.log(product_name, product_code, product_description) 
 
         const { error } = await supabase.from("products").insert({
       name: product_name,
