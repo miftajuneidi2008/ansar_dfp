@@ -23,6 +23,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { DistrictSchema, DistrictSchemaType } from "@/schema/DistrictSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import BranchForm from "./BrachForm";
+import { useToast } from "@/components/notifications/toast-provider";
 
 interface District {
   id: string;
@@ -41,6 +42,7 @@ interface Branch {
 export default function DistrictsPage() {
   const { profile } = useAuthContext();
   const supabase = getSupabaseBrowserClient();
+  const { showToast } = useToast()
 
   const [districts, setDistricts] = useState<District[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -115,7 +117,7 @@ export default function DistrictsPage() {
 
   const onSubmit: SubmitHandler<DistrictSchemaType> = async (data) => {
     const { district_name, district_code } = data;
-    console
+    try{
     const { error } = await supabase.from("districts").insert({
       name: district_name,
       code: district_code || null,
@@ -123,8 +125,22 @@ export default function DistrictsPage() {
     });
 
     if (!error) {
+       showToast({
+          title: "Draft Saved",
+          message: "Successfully created district.",
+          type: "success",
+        })
       fetchDistricts();
     }
+  }
+  catch(error){
+    console.log(error);
+     showToast({
+          title: "Draft Saved",
+          message: "Failed to create district.",
+          type: "error",
+        })
+  }
   };
 
   async function handleAddBranch() {
