@@ -1,3 +1,4 @@
+"use client"
 import React from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,8 +16,10 @@ import { SubmitHandler,Controller, useForm } from "react-hook-form";
 import { BranchSchema, BranchSchemaType } from "@/schema/BrachSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useToast } from "@/components/notifications/toast-provider";
 const BranchForm = ({ districts, fetchBranches }:any) => {
   const supabase = getSupabaseBrowserClient();
+  const {showToast} = useToast()
  console.log(districts);
   const {
     register,
@@ -44,6 +47,11 @@ const BranchForm = ({ districts, fetchBranches }:any) => {
     });
 
     if (!error) {
+         showToast({
+          title: "District Saved",
+          message: "Successfully created district.",
+          type: "success",
+        })
       fetchBranches();
       reset()
     }

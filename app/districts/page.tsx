@@ -7,13 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Search, Pencil, Trash2 } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAuthContext } from "@/components/auth/auth-provider";
@@ -143,22 +137,22 @@ export default function DistrictsPage() {
   }
   };
 
-  async function handleAddBranch() {
-    if (!newBranchName.trim() || !selectedDistrictId) return;
+  // async function handleAddBranch() {
+  //   if (!newBranchName.trim() || !selectedDistrictId) return;
 
-    const { error } = await supabase.from("branches").insert({
-      name: newBranchName,
-      code: newBranchCode || null,
-      district_id: selectedDistrictId,
-    });
+  //   const { error } = await supabase.from("branches").insert({
+  //     name: newBranchName,
+  //     code: newBranchCode || null,
+  //     district_id: selectedDistrictId,
+  //   });
 
-    if (!error) {
-      setNewBranchName("");
-      setNewBranchCode("");
-      setSelectedDistrictId("");
-      fetchBranches();
-    }
-  }
+  //   if (!error) {
+  //     setNewBranchName("");
+  //     setNewBranchCode("");
+  //     setSelectedDistrictId("");
+  //     fetchBranches();
+  //   }
+  // }
 
   async function handleDeleteDistrict(id: string) {
     const { error } = await supabase.from("districts").delete().eq("id", id);
