@@ -66,7 +66,7 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showAddDialog, setShowAddDialog] = useState(false);
- const {showToast}  = useToast()
+  const { showToast } = useToast();
   // Add user form
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserName, setNewUserName] = useState("");
@@ -120,7 +120,7 @@ export default function UsersPage() {
     },
   });
 
-    const watchedUserRole = watch("user_role");
+  const watchedUserRole = watch("user_role");
   // async function handleAddUser() {
   //   if (!newUserEmail || !newUserName || !newUserPassword) return;
   //   const {
@@ -202,20 +202,21 @@ export default function UsersPage() {
         if (profileError) throw profileError;
         fetchUsers();
         reset();
-          showToast({
+
+        setShowAddDialog(false);
+        showToast({
           title: "User Saved",
           message: "User Successfuly Created",
           type: "success",
-        })
-        setShowAddDialog(false);
+        });
       }
     } catch (error: any) {
       console.error(" Error creating user:", error);
-         showToast({
-          title: "Save User",
-          message: error || "Failed to create user",
-          type: "error",
-        })
+      showToast({
+        title: "Save User",
+        message: error || "Failed to create user",
+        type: "error",
+      });
       alert(error.message);
     } finally {
       await supabase.auth.setSession({
