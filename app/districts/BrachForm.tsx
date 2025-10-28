@@ -48,12 +48,19 @@ const BranchForm = ({ districts, fetchBranches }:any) => {
 
     if (!error) {
          showToast({
-          title: "District Saved",
-          message: "Successfully created district.",
+          title: "Branch Saved",
+          message: "Successfully created Branch.",
           type: "success",
         })
       fetchBranches();
       reset()
+    }
+    else if(error){
+         showToast({
+          title: "Save Branch",
+          message: "SFailed to careate barnch.",
+          type: "error",
+        })
     }
   };
 

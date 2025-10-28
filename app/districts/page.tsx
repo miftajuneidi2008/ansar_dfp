@@ -120,7 +120,7 @@ export default function DistrictsPage() {
 
     if (!error) {
        showToast({
-          title: "Draft Saved",
+          title: "District Saved",
           message: "Successfully created district.",
           type: "success",
         })
@@ -130,7 +130,7 @@ export default function DistrictsPage() {
   catch(error){
     console.log(error);
      showToast({
-          title: "Draft Saved",
+          title: "Save District",
           message: "Failed to create district.",
           type: "error",
         })

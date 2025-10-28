@@ -22,6 +22,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import { EditProductDialog } from "./EditProductDialog";
 import { ProductSchema, ProductSchematype } from "@/schema/ProductSchema";
+import { useToast } from "@/components/notifications/toast-provider";
 
 interface Product {
   id: string;
@@ -34,7 +35,7 @@ interface Product {
 export default function ProductsPage() {
   const { profile } = useAuthContext();
   const supabase = getSupabaseBrowserClient();
-
+  const {showToast} = useToast()
   const [products, setProducts] = useState<Product[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [productName, setProductName] = useState("");
@@ -105,6 +106,19 @@ export default function ProductsPage() {
 
     if(!error){
       fetchProducts();
+      showToast({
+          title: "Product Saved",
+          message: "Successfully created Product.",
+          type: "success",
+        })
+    }
+    else if (error)
+    {
+       showToast({
+          title: "Save Product",
+          message: "Failed to created Product.",
+          type: "error",
+        })
     }
     
   }

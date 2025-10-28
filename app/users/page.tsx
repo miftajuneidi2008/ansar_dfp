@@ -36,6 +36,7 @@ import { EditUserDialog } from "./EditUserDialog";
 import { SubmitHandler, useForm, Controller } from "react-hook-form";
 import { UserSchema, UserSchemaType } from "@/schema/UserSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useToast } from "@/components/notifications/toast-provider";
 
 interface User {
   id: string;
@@ -65,7 +66,7 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showAddDialog, setShowAddDialog] = useState(false);
-
+ const {showToast}  = useToast()
   // Add user form
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserName, setNewUserName] = useState("");
@@ -201,10 +202,20 @@ export default function UsersPage() {
         if (profileError) throw profileError;
         fetchUsers();
         reset();
+          showToast({
+          title: "User Saved",
+          message: "User Successfuly Created",
+          type: "success",
+        })
         setShowAddDialog(false);
       }
     } catch (error: any) {
       console.error(" Error creating user:", error);
+         showToast({
+          title: "Save User",
+          message: error || "Failed to create user",
+          type: "error",
+        })
       alert(error.message);
     } finally {
       await supabase.auth.setSession({
