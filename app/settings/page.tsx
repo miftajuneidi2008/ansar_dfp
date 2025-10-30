@@ -149,6 +149,7 @@ export default function SettingsPage() {
     }
 
     if (assignmentsToCreate.length > 0) {
+      console.log(assignmentsToCreate)
       const { error } = await supabase.from("approver_assignments").insert(assignmentsToCreate)
 
       if (!error) {
